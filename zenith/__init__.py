@@ -4,7 +4,7 @@ from .speculation.predictor import predictor
 import atexit
 import functools
 
-__version__ = "0.1.5"
+__version__ = "1.1.3"
 
 _engine = SpeculationEngine()
 
