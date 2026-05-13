@@ -32,10 +32,10 @@ The following benchmark demonstrates boot time comparison when loading heavyweig
 
 ## Installation
 
-Please note that while the package is installed as `zenith-core`, the import statement in your Python code remains `zenith`.
+Please note that while the package is installed as `alenia-zenith`, the import statement in your Python code remains `zenith`.
 
 ```bash
-pip install zenith-core
+pip install alenia-zenith
 ```
 
 ---

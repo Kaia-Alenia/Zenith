@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "zenith-core"
+name = "alenia-zenith"
 version = "0.1.0"
 description = "A deep infrastructure library for Python 3.14+ focused on extreme startup time optimization via lazy imports and speculative loading."
 readme = "README.md"
