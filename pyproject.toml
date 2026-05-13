@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zenith-core"
+version = "0.1.0"
+description = "A deep infrastructure library for Python 3.14+ focused on extreme startup time optimization via lazy imports and speculative loading."
+readme = "README.md"
+requires-python = ">=3.14"
+license = { text = "ALENIA STUDIOS TOOL LICENSE" }
+authors = [
+    { name = "Alenia Studios" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Kaia-Alenia/Zenith"
+
+[tool.hatch.build.targets.wheel]
+packages = ["zenith"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unreachable = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_any_generics = true
