@@ -2,7 +2,7 @@ import sys
 import types
 import importlib.abc
 import importlib.machinery
-from typing import Any, List, Optional, Set, Union
+from typing import Any
 
 STRICT_EXCLUSIONS = {"zenith", "sys", "builtins", "importlib", "nerve"}
 
@@ -54,7 +54,7 @@ class ZenithLazyLoader(importlib.abc.Loader):
         self.engine = engine
         self.predictor = predictor
 
-    def create_module(self, spec: importlib.machinery.ModuleSpec) -> Optional[types.ModuleType]:
+    def create_module(self, spec: importlib.machinery.ModuleSpec) -> types.ModuleType | None:
         return ZenithLazyModule(spec, self.real_loader, self.engine, self.predictor)
 
     def exec_module(self, module: types.ModuleType) -> None:
@@ -62,20 +62,20 @@ class ZenithLazyLoader(importlib.abc.Loader):
 
 
 class ZenithLazyFinder(importlib.abc.MetaPathFinder):
-    _active_searches: Set[str] = set()
+    _active_searches: set[str] = set()
 
-    def __init__(self, engine: Any, predictor: Any, ignored_packages: Optional[Set[str]] = None) -> None:
+    def __init__(self, engine: Any, predictor: Any, ignored_packages: set[str] | None = None) -> None:
         self.engine = engine
         self.predictor = predictor
         self.original_finders = sys.meta_path.copy()
-        self.ignored_packages: Set[str] = ignored_packages or STRICT_EXCLUSIONS
+        self.ignored_packages: set[str] = ignored_packages or STRICT_EXCLUSIONS
 
     def find_spec(
         self,
         fullname: str,
-        path: Optional[List[Union[str, bytes]]] = None,
-        target: Optional[types.ModuleType] = None,
-    ) -> Optional[importlib.machinery.ModuleSpec]:
+        path: list[str | bytes] | None = None,
+        target: types.ModuleType | None = None,
+    ) -> importlib.machinery.ModuleSpec | None:
         if fullname in self._active_searches:
             return None
 

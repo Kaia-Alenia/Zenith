@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
 import threading
-from typing import List
 
 CACHE_FILE = Path(".zenith_cache.json")
 
@@ -10,12 +9,12 @@ class ImportPredictor:
         self.history = set()
         self.lock = threading.Lock()
     
-    def load_predictions(self) -> List[str]:
+    def load_predictions(self) -> list[str]:
         if CACHE_FILE.exists():
             try:
                 with CACHE_FILE.open("r", encoding="utf-8") as f:
-                    datos = json.load(f)
-                    return datos.get("modulos", [])
+                    data = json.load(f)
+                    return data.get("modules", [])
             except Exception:
                 return []
         return []
@@ -27,11 +26,11 @@ class ImportPredictor:
     def persist_cache(self) -> None:
         try:
             with self.lock:
-                modulos_guardados = set(self.load_predictions())
-                modulos_totales = list(modulos_guardados.union(self.history))
+                saved_modules = set(self.load_predictions())
+                total_modules = list(saved_modules.union(self.history))
             
             with CACHE_FILE.open("w", encoding="utf-8") as f:
-                json.dump({"modulos": modulos_totales}, f, indent=4)
+                json.dump({"modules": total_modules}, f, indent=4)
         except Exception:
             pass
 

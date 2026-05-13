@@ -1,12 +1,12 @@
 # Zenith
 
-[![Python Version](https://img.shields.io/badge/python-3.14%20%7C%203.15-blue.svg)](https://www.python.org)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Alenia%20Studios%201.0-orange.svg)](https://github.com/Kaia-Alenia/Zenith/blob/main/LICENSE)
 [![Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/Kaia-Alenia/Zenith)
 
 Zero-latency boot infrastructure for Python applications.
 
-Zenith is an advanced speculative execution pre-loader designed to eliminate Python's startup import latency. By leveraging Python 3.14's native free-threading model (PEP 703) and fully automated lazy loading, Zenith speculatively pre-loads heavyweight dependencies concurrently in background threads, enabling near-instantaneous application boot times.
+Zenith is an advanced speculative execution pre-loader designed to eliminate Python's startup import latency. By leveraging Python 3.10+ environments and fully automated lazy loading, Zenith speculatively pre-loads heavyweight dependencies concurrently in background threads, enabling near-instantaneous application boot times.
 
 ---
 
@@ -47,7 +47,7 @@ Zenith accomplishes extreme startup optimization without requiring application c
 
 ### 2. Speculative Execution (`SpeculationEngine`)
 * **Background Pre-loading:** Operating concurrently to your application's bootstrap phase, a persistent background thread (`SpeculationEngine`) proactively loads modules into memory.
-* **PEP 703 Multi-threading:** On Python 3.14+ free-threaded environments, this process runs on separate CPU cores completely free of the Global Interpreter Lock (GIL) overhead, avoiding main-thread performance degradation.
+* **PEP 703 Multi-threading:** On Python 3.10+ free-threaded environments (where available), this process runs on separate CPU cores completely free of the Global Interpreter Lock (GIL) overhead, avoiding main-thread performance degradation.
 
 ---
 

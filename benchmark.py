@@ -1,10 +1,10 @@
 import sys
 import time
 
-def ejecutar_carga(usar_zenith):
-    inicio = time.time()
+def execute_load(use_zenith):
+    start = time.time()
 
-    if usar_zenith:
+    if use_zenith:
         import zenith
         zenith.ignite()
 
@@ -15,17 +15,17 @@ def ejecutar_carga(usar_zenith):
     import xml.etree.ElementTree
     import multiprocessing
     
-    nerve_version = getattr(nerve, '__version__', 'desconocida')
+    nerve_version = getattr(nerve, '__version__', 'unknown')
     
-    fin = time.time()
-    return fin - inicio
+    end = time.time()
+    return end - start
 
 if __name__ == '__main__':
-    modo = sys.argv[1] if len(sys.argv) > 1 else "tradicional"
+    mode = sys.argv[1] if len(sys.argv) > 1 else "traditional"
     
-    if modo == "--zenith":
-        tiempo = ejecutar_carga(usar_zenith=True)
-        print(f"Arranque CON Zenith: {tiempo:.5f} segundos")
+    if mode == "--zenith":
+        time_taken = execute_load(use_zenith=True)
+        print(f"Boot WITH Zenith: {time_taken:.5f} seconds")
     else:
-        tiempo = ejecutar_carga(usar_zenith=False)
-        print(f"Arranque SIN Zenith: {tiempo:.5f} segundos")
+        time_taken = execute_load(use_zenith=False)
+        print(f"Boot WITHOUT Zenith: {time_taken:.5f} seconds")
