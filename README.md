@@ -83,12 +83,29 @@ Running telemetry measurements...
 
 ---
 
-## Installation
+## ⚙️ Installation
+
+We highly recommend installing this tool inside an isolated virtual environment to comply with modern OS security standards (PEP 668) and avoid dependency conflicts.
 
 Please note that while the package is distributed as `alenia-zenith` on PyPI, the library is imported under the name `zenith`.
 
 ```bash
+# 1. Create a virtual environment
+python3 -m venv alenia_env
+
+# 2. Activate it
+# On Linux/macOS:
+source alenia_env/bin/activate
+# On Windows:
+alenia_env\Scripts\activate
+
+# 3. Install the engine
 pip install alenia-zenith
+```
+
+Note for global installation: If you prefer a system-wide installation (e.g., inside Docker or specific CI/CD pipelines) and are aware of the risks, you can bypass the OS restriction flag:
+```bash
+pip install alenia-zenith --break-system-packages
 ```
 
 ---
