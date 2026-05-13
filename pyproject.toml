@@ -22,7 +22,7 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/Kaia-Alenia/Zenith"
+"Homepage" = "https://github.com/Kaia-Alenia/Zenith"
 
 [tool.hatch.build.targets.wheel]
 packages = ["zenith"]
