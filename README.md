@@ -1,8 +1,8 @@
 # Zenith
 
 [![Python Version](https://img.shields.io/badge/python-3.14%20%7C%203.15-blue.svg)](https://www.python.org)
-[![License](https://img.shields.io/badge/license-Alenia%20Studios%201.0-orange.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-alpha-red.svg)](README.md)
+[![License](https://img.shields.io/badge/license-Alenia%20Studios%201.0-orange.svg)](https://github.com/Kaia-Alenia/Zenith/blob/main/LICENSE)
+[![Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/Kaia-Alenia/Zenith)
 
 Zero-latency boot infrastructure for Python applications.
 
