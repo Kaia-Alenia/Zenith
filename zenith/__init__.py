@@ -3,7 +3,7 @@ from .hooks.loader import install_hook
 from .speculation.predictor import predictor
 import atexit
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 _engine = SpeculationEngine()
 _ignited = False

@@ -1,4 +1,4 @@
-name: Python Package Tests and Release
+name: Python Package Tests, Release and PyPI Publish
 
 on:
   push:
@@ -11,7 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: pypi
     permissions:
+      id-token: write
       contents: write
     strategy:
       fail-fast: false
@@ -38,3 +40,6 @@ jobs:
         files: dist/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      if: startsWith(github.ref, 'refs/tags/')
