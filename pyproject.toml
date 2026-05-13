@@ -8,7 +8,6 @@ version = "0.1.0"
 description = "A deep infrastructure library for Python 3.14+ focused on extreme startup time optimization via lazy imports and speculative loading."
 readme = "README.md"
 requires-python = ">=3.14"
-license = { text = "ALENIA STUDIOS TOOL LICENSE" }
 authors = [
     { name = "Alenia Studios" }
 ]
@@ -27,6 +26,11 @@ Homepage = "https://github.com/Kaia-Alenia/Zenith"
 
 [tool.hatch.build.targets.wheel]
 packages = ["zenith"]
+license-files = []
+
+[tool.hatch.build.targets.sdist]
+license-files = []
+
 
 [tool.mypy]
 python_version = "3.14"
