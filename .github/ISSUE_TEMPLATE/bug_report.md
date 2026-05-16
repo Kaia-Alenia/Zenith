@@ -22,4 +22,4 @@ A clear and concise description of what you expected to happen.
 **Environment**
  - OS: (e.g. Linux Mint, Windows 11, macOS Sequoia)
  - Python Version: (e.g. 3.14.0b1, 3.15)
- - Zenith Version: (e.g. 0.1.0)
+ - Zenith Version: (e.g. 1.2.0)

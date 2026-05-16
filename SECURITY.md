@@ -2,17 +2,19 @@
 
 ## Supported Versions
 
-Zenith provides active security updates and patches for the following Python versions:
+Zenith provides active security updates for the following versions:
 
 | Version | Supported |
 | ------- | --------- |
-| 3.15.x  | Yes       |
-| 3.14.x  | Yes       |
-| < 3.14  | No        |
+| 1.2.x   | Yes       |
+| 1.1.x   | Yes       |
+| < 1.1   | No        |
+
+**Minimum Python version required: 3.10**
 
 ## Reporting a Vulnerability
 
-We take the security of Zenith seriously. If you discover a security vulnerability or a dependency injection vector, please do not disclose it publicly. 
+We take the security of Zenith seriously. If you discover a security vulnerability or a dependency injection vector, please do not disclose it publicly.
 
 Please report any vulnerability privately by sending an email to our core team:
 

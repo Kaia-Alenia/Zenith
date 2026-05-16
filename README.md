@@ -2,108 +2,74 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Alenia%20Studios%201.0-orange.svg)](https://github.com/Kaia-Alenia/Zenith/blob/main/LICENSE)
-[![Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/Kaia-Alenia/Zenith)
+[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/Kaia-Alenia/Zenith)
+[![Status](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/Kaia-Alenia/Zenith)
 
-Zero-latency boot infrastructure for Python applications.
+**Startup optimization library for Python applications.**
 
-Zenith is an advanced speculative execution pre-loader designed to eliminate Python's startup import latency. By leveraging Python 3.10+ environments and fully automated lazy loading, Zenith speculatively pre-loads heavyweight dependencies concurrently in background threads, enabling near-instantaneous application boot times.
+Zenith reduces your application's import time by combining two mechanisms: **lazy import proxies** (modules are not executed until first attribute access) and **speculative background pre-loading** (a thread pool pre-loads known modules while your app boots). A persistent cache learns which modules your app uses across runs, making every subsequent boot faster.
 
----
-
-## Performance & Telemetry Benchmarks
-
-Performance optimization is Zenith's core mission. The telemetry suite measures boot sequences using representative workloads (e.g., initializing `multiprocessing`, `urllib.request`, `sqlite3`, `json`, and parsed XML structures simultaneously):
-
-### Average Boot Speed Comparison
-
-| Load Phase | Native Python | Zenith (Warm Cache) | Absolute Savings | Relative Improvement |
-| :--- | :--- | :--- | :--- | :--- |
-| **Boot Duration (s)** | `~0.150s` | `~0.040s` | **0.110s** | **~73.3% faster** |
-| **Boot Duration (ms)**| `~150.0ms`| `~40.0ms` | **110.0ms** | **~73.3% faster** |
-
-*Note: Telemetry metrics are recorded on isolated subprocess iterations to prevent memory warm-up leakage.*
+> **Compared to Python 3.15 lazy imports:** Python 3.15 will defer imports until first use. Zenith goes a step further — it *actively pre-loads* those modules in the background based on your run history, so they are ready before you even access them.
 
 ---
 
-## Technical Deep Dive
+## Measured Results (warm cache)
 
-Zenith accomplishes extreme startup optimization without requiring application code refactoring. It manages this through two specialized, low-level systems:
+Benchmarks run on isolated subprocesses, 5 runs averaged, loading `multiprocessing`, `urllib.request`, `sqlite3`, `json`, `xml.etree.ElementTree`:
+
+| Metric          | Native Python | Zenith (warm) | Saved     |
+|:----------------|:-------------:|:-------------:|:---------:|
+| Avg Boot (ms)   | ~52ms         | ~37ms         | ~15ms     |
+| Improvement     | —             | —             | **~28%**  |
+
+> First run builds the cache. Subsequent runs benefit from speculative pre-loading. Results vary by hardware and module set.
+
+---
+
+## How It Works
 
 ```
-                  [Application Entrypoint]
-                             │
-                    ( zenith.ignite() )
-                             │
-            ┌────────────────┴────────────────┐
-            ▼                                 ▼
-   [sys.meta_path Interception]      [Background Thread Pool]
-    - ZenithLazyFinder                - SpeculationEngine (Free-Threaded)
-    - Returns ZenithLazyModule        - Pre-loads actual modules (GIL-free)
+              [Application Entrypoint]
+                         │
+               ( zenith.ignite() )
+                         │
+         ┌───────────────┴──────────────────┐
+         ▼                                  ▼
+[sys.meta_path Hook]              [ThreadPoolExecutor]
+ ZenithLazyFinder                  workers=4 (default)
+ Returns proxy module              Pre-loads cached modules
+ on first import                   with GIL bypass per thread
+         │                                  │
+         ▼                                  ▼
+[First attribute access]          [Module ready in sys.modules]
+ _zenith_load_module() called      Main thread gets real module
+ Loads real module on demand       instantly on access
 ```
 
-### 1. Interception Layer (`sys.meta_path`)
-* **Custom MetaPathFinder (`ZenithLazyFinder`):** Injected at index zero of `sys.meta_path`, this hook intercept all import requests.
-* **Proxy Lazy Loading (`ZenithLazyModule`):** Instead of executing synchronous, disk-bound imports, Zenith instantly returns a proxy module. The actual loading is postponed until an attribute of the module is actively accessed.
+### 1. Lazy Import Hook
 
-### 2. Speculative Execution (`SpeculationEngine`)
-* **Background Pre-loading:** Operating concurrently to your application's bootstrap phase, a persistent background thread (`SpeculationEngine`) proactively loads modules into memory.
-* **PEP 703 Multi-threading:** On Python 3.10+ free-threaded environments (where available), this process runs on separate CPU cores completely free of the Global Interpreter Lock (GIL) overhead, avoiding main-thread performance degradation.
+`ZenithLazyFinder` is inserted at index 0 of `sys.meta_path`. Every new `import` statement returns a lightweight `ZenithLazyModule` proxy instead of executing the module immediately. The real module is only loaded the first time one of its attributes is accessed.
+
+### 2. Speculative Pre-loader
+
+A `ThreadPoolExecutor` (4 workers by default) pre-loads modules from the persistent cache in background threads. A thread-local bypass flag prevents background threads from creating further lazy proxies, ensuring they load real modules.
+
+### 3. Persistent Cache
+
+On exit, Zenith writes `.zenith_cache.json` with the list of modules used during the session. On next launch, those modules are queued for background pre-loading before user code runs.
 
 ---
 
-## Telemetry Suite (`zenith-check`)
-
-Zenith includes an integrated performance verification tool under `examples/zenith_telemetry.py` to allow engineers to measure latency in their specific hardware environments.
-
-### Running the Telemetry Script
-
-To measure the millisecond savings on your system, execute:
+## Installation
 
 ```bash
-python3 examples/zenith_telemetry.py
-```
-
-### Expected Output Structure
-
-```text
-=========================================
-     ZENITH PERFORMANCE TELEMETRY        
-=========================================
-Running telemetry measurements...
-
------------------------------------------
- METRIC          | NATIVE     | ZENITH   
------------------------------------------
- Avg Boot (s)    | 0.06168s   | 0.00152s
- Avg Boot (ms)   | 61.68ms    | 1.52ms
------------------------------------------
- Telemetry Result: Saved 60.16ms (97.5% faster)
-=========================================
-```
-
----
-
-## ⚙️ Installation
-
-We highly recommend installing this tool inside an isolated virtual environment to comply with modern OS security standards (PEP 668) and avoid dependency conflicts.
-
-Please note that while the package is distributed as `alenia-zenith` on PyPI, the library is imported under the name `zenith`.
-
-```bash
-# 1. Create a virtual environment
 python3 -m venv alenia_env
-
-# 2. Activate it
-# On Linux/macOS:
 source alenia_env/bin/activate
-# On Windows:
-alenia_env\Scripts\activate
-
-# 3. Install the engine
 pip install alenia-zenith
 ```
 
-Note for global installation: If you prefer a system-wide installation (e.g., inside Docker or specific CI/CD pipelines) and are aware of the risks, you can bypass the OS restriction flag:
+For system-wide use (Docker, CI/CD):
+
 ```bash
 pip install alenia-zenith --break-system-packages
 ```
@@ -112,27 +78,261 @@ pip install alenia-zenith --break-system-packages
 
 ## Quick Start
 
-Initialize Zenith at the absolute top of your entrypoint script:
-
 ```python
 import zenith
 zenith.ignite()
 
-# Your heavyweight imports (loaded lazily & speculatively in the background)
+# Your imports — served lazily and pre-loaded in background
 import pandas as pd
 import numpy as np
+import requests
+```
+
+### With file-based AST scanning
+
+```python
+import zenith
+zenith.ignite(file=__file__)  # Scans this file for imports and pre-loads them
+```
+
+### Full options
+
+```python
+zenith.ignite(
+    file=__file__,        # Scan this file's imports and pre-load them
+    workers=8,            # Background thread pool size (default: 4)
+    verbose=True,         # Print pre-load events to stdout
+    exclude=["mymodule"], # Never lazy-load these packages
+    cache_path=".cache/zenith.json",  # Custom cache location
+    show_banner=False,    # Suppress the ASCII banner
+)
 ```
 
 ---
 
-## Configuration & Cache Persistence
+## Additional API
 
-Zenith automatically establishes a local import registry file in your project's root:
+```python
+# Explicitly pre-load specific modules
+zenith.warm("pandas", "numpy", "torch")
 
-* **`.zenith_cache.json`:** Records module import sequences and dependencies during runtime. On subsequent boot cycles, the `SpeculationEngine` reads this cache to proactively queue modules on background threads, ensuring instant availability.
+# Exclude packages from lazy loading
+zenith.exclude("my_c_extension", "greenlet")
+
+# Inspect current state
+info = zenith.status()
+# {
+#   "version": "1.2.0",
+#   "initialized": True,
+#   "workers": 4,
+#   "preloaded_count": 12,
+#   "cached_modules": [...],
+#   ...
+# }
+
+# Statically analyze a file's imports
+modules = zenith.analyze("myapp/main.py")
+
+# Clear the module cache
+zenith.invalidate_cache()
+```
+
+---
+
+## CLI Tools
+
+After installation, the `zenith` command is available:
+
+```bash
+# Analyze imports in a file
+zenith analyze myapp/main.py --verbose
+
+# Show cache status
+zenith status
+
+# Run a benchmark comparison
+zenith benchmark --runs 5
+zenith benchmark --runs 5 --modules pandas numpy requests
+
+# Clear the cache
+zenith invalidate
+```
+
+### Example CLI output
+
+```text
+[Zenith Analyzer] myapp/main.py
+  Total imports : 18
+  Stdlib        : 6
+  Third-party   : 12
+
+Third-party:
+  - fastapi
+  - pydantic
+  - sqlalchemy
+  ...
+```
+
+---
+
+## Telemetry Script
+
+```bash
+python3 examples/zenith_telemetry.py
+```
+
+```text
+=========================================
+     ZENITH PERFORMANCE TELEMETRY
+=========================================
+Modules : multiprocessing, urllib.request, sqlite3, json, xml.etree.ElementTree
+Runs    : 5
+Running...
+
+-----------------------------------------
+ METRIC           |   NATIVE   |  ZENITH
+-----------------------------------------
+ Avg Boot (s)     | 0.05210s  | 0.03725s
+ Avg Boot (ms)    | 52.10ms  | 37.25ms
+-----------------------------------------
+ Saved 14.86ms (28.5% faster)
+=========================================
+NOTE: On first run Zenith builds its cache. Run again for warm results.
+```
+
+---
+
+## Recommended Use Cases
+
+### ✅ Ideal For — High Impact
+
+#### 1. CLIs (Command Line Interfaces)
+```python
+# cli.py — command line tool
+import zenith
+zenith.ignite(file=__file__, show_banner=False)
+
+import click           # Loaded lazily
+import rich            # Loaded lazily
+import requests        # Loaded lazily
+import yaml            # Loaded lazily
+```
+**Why it works:** CLI tools are launched thousands of times a day. Every 30ms saved is noticeable to the user. `click`, `rich`, and `requests` are heavy modules that take time to initialize.
+
+**Real-world examples:** `pip`, `git`, `black`, `ruff`, `poetry` are tools where startup time is critical.
+
+---
+
+#### 2. APIs and Web Servers (Cold Starts)
+```python
+# main.py — FastAPI, Flask, Django
+import zenith
+zenith.ignite(file=__file__, workers=8, show_banner=False)
+
+import fastapi
+import pydantic
+import sqlalchemy
+import uvicorn
+```
+**Why it works:** In serverless environments (AWS Lambda, Google Cloud Run), the "cold start" is the biggest latency issue. Zenith allows the server to start serving requests while still loading secondary modules in the background.
+
+---
+
+#### 3. Data Science / ML Scripts
+```python
+# pipeline.py
+import zenith
+zenith.ignite(show_banner=False)
+zenith.warm("pandas", "numpy", "sklearn", "matplotlib")
+
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+```
+**Why it works:** `pandas`, `numpy`, and `torch` have some of the longest import times in the Python ecosystem (up to 500ms+ combined). With a warm cache, these are pre-loaded in the background while configuration code is running.
+
+---
+
+#### 4. Development Tools / DevTools
+```python
+# devtool.py
+import zenith
+zenith.ignite(file=__file__)
+
+import ast, pathlib, json
+from typing import ...
+import mypy, black, isort
+```
+**Why it works:** Dev tools are invoked constantly (on every file save, in CI/CD). The cumulative startup overhead is significant.
+
+---
+
+#### 5. Desktop Applications (tkinter, PyQt, wx)
+```python
+# app.py
+import zenith
+zenith.ignite(workers=4, show_banner=False)
+
+import tkinter as tk
+import PIL
+import sqlite3
+```
+**Why it works:** Python GUIs are notoriously slow to start. Zenith can pre-load secondary modules while the main window is initializing.
+
+---
+
+### ⚠️ Works But With Limitations
+
+#### 6. Monolithic Django / Flask Applications
+```python
+# manage.py or wsgi.py
+import zenith
+zenith.ignite(show_banner=False, exclude=["django"])
+# Do not apply lazy loading to Django itself — use warm() for secondary modules
+zenith.warm("PIL", "boto3", "celery")
+```
+> **Limitation:** Django has its own app importation system. Apply Zenith **only** to external dependencies, not the framework itself.
+
+---
+
+#### 7. Jupyter Notebooks
+```python
+# First cell of the notebook
+import zenith
+zenith.ignite(show_banner=False)
+zenith.warm("pandas", "matplotlib", "seaborn", "plotly")
+```
+> **Limitation:** In notebooks, the session lasts a long time, so the benefit of the warm cache is less noticeable. It's mainly useful for the initial kernel startup.
+
+---
+
+### ❌ Not Recommended
+
+| Case | Reason |
+|------|--------|
+| **Short scripts (<1s total)** | The overhead of `ignite()` outweighs the benefit |
+| **Critical C extensions** (`greenlet`, `gevent`) | Not thread-safe for background loading. Use `exclude()` |
+| **Modules using `sys.modules[__name__]` at import-time** | May have unexpected behavior with proxies. Add to `exclude()` |
+| **Python < 3.10** | Not supported due to type hints used |
+
+---
+
+## Known Limitations
+
+- **GIL:** Zenith uses standard threading. On CPython (default), background threads share the GIL with the main thread. This means pre-loading is concurrent, not fully parallel. The benefit comes from overlapping I/O-bound disk reads with your main thread's execution.
+- **Cold first run:** The first run has no cache and shows no speedup. The second run onward benefits from speculative pre-loading.
+- **C extensions:** Some C extension modules are not safe to import from a background thread. Use `zenith.exclude("module_name")` for those.
 
 ---
 
 ## License
 
-Distributed under the ALENIA STUDIOS TOOL LICENSE Version 1.0. See [LICENSE](https://github.com/Kaia-Alenia/Zenith/blob/main/LICENSE) for more information.
+Distributed under the ALENIA STUDIOS TOOL LICENSE Version 1.0. See [LICENSE](LICENSE) for more information.
+
+Contact: contact.aleniastudios@gmail.com
+
+---
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.  
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the list of contributors.  
+See [CONTRIBUTING.md](CONTRIBUTING.md) to learn how to contribute.

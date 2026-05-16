@@ -1,63 +1,67 @@
 import sys
 import time
 import subprocess
-import json
+from pathlib import Path
 
-def run_isolated(use_zenith):
+ROOT = Path(__file__).parent
+
+
+def run_isolated(use_zenith: bool, modules: list[str]) -> float:
+    mod_list = repr(modules)
+    header = "import zenith; zenith.ignite(show_banner=False)\n" if use_zenith else ""
     code = f"""
-import sys
-import time
-if {use_zenith}:
-    import zenith
-    zenith.ignite()
-start = time.time()
-import multiprocessing
-import urllib.request
-import sqlite3
+import sys, time
+sys.path.insert(0, '{ROOT}')
+{header}
+start = time.perf_counter()
+for m in {mod_list}:
+    __import__(m)
+elapsed = time.perf_counter() - start
 import json
-import xml.etree.ElementTree
-end = time.time()
-print(json.dumps({{"time": end - start}}))
+print(json.dumps({{"time": elapsed}}))
 """
     result = subprocess.run(
         [sys.executable, "-c", code],
-        capture_output=True,
-        text=True,
-        cwd="/media/alejandro/D/Portafolio/Zenith"
+        capture_output=True, text=True,
     )
     try:
-        return json.loads(result.stdout.strip())["time"]
+        return __import__("json").loads(result.stdout.strip())["time"]
     except Exception:
-        return 0.15
+        return 0.0
 
-def main():
+
+def main() -> None:
+    modules = ["multiprocessing", "urllib.request", "sqlite3", "json", "xml.etree.ElementTree"]
+    runs = 5
+
     print("=========================================")
     print("     ZENITH PERFORMANCE TELEMETRY        ")
     print("=========================================")
-    print("Running telemetry measurements...")
-    
-    native_times = []
-    zenith_times = []
-    
-    for _ in range(3):
-        native_times.append(run_isolated(False))
-        zenith_times.append(run_isolated(True))
-        
-    avg_native = sum(native_times) / len(native_times)
-    avg_zenith = sum(zenith_times) / len(zenith_times)
-    
-    saved_seconds = avg_native - avg_zenith
-    saved_ms = saved_seconds * 1000
-    improvement = (saved_seconds / avg_native) * 100
-    
-    print("\n-----------------------------------------")
-    print(" METRIC          | NATIVE     | ZENITH   ")
+    print(f"Modules : {', '.join(modules)}")
+    print(f"Runs    : {runs}")
+    print("Running...\n")
+
+    native_times = [run_isolated(False, modules) for _ in range(runs)]
+    zenith_times = [run_isolated(True, modules) for _ in range(runs)]
+
+    avg_n = sum(native_times) / runs
+    avg_z = sum(zenith_times) / runs
+    saved = avg_n - avg_z
+    pct = (saved / avg_n * 100) if avg_n > 0 else 0
+
     print("-----------------------------------------")
-    print(f" Avg Boot (s)    | {avg_native:.5f}s   | {avg_zenith:.5f}s")
-    print(f" Avg Boot (ms)   | {avg_native*1000:.2f}ms  | {avg_zenith*1000:.2f}ms")
+    print(f" {'METRIC':<16} | {'NATIVE':^10} | {'ZENITH':^8}")
     print("-----------------------------------------")
-    print(f" Telemetry Result: Saved {saved_ms:.2f}ms ({improvement:.1f}% faster)")
+    print(f" {'Avg Boot (s)':<16} | {avg_n:.5f}s  | {avg_z:.5f}s")
+    print(f" {'Avg Boot (ms)':<16} | {avg_n*1000:.2f}ms  | {avg_z*1000:.2f}ms")
+    print("-----------------------------------------")
+    if saved > 0:
+        print(f" Saved {saved*1000:.2f}ms ({pct:.1f}% faster)")
+    else:
+        print(f" Overhead {abs(saved)*1000:.2f}ms — cold cache, run again for warm results")
     print("=========================================")
+    print("\nNOTE: On first run Zenith builds its cache. Run again for warm results.")
+
 
 if __name__ == "__main__":
     main()

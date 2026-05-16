@@ -1,30 +1,40 @@
 import ast
+import sys
+from pathlib import Path
 
-class LazyASTTransformer(ast.NodeTransformer):
+_STDLIB_ROOTS: frozenset[str] = frozenset(sys.stdlib_module_names)
+
+
+class ImportCollector(ast.NodeVisitor):
     def __init__(self) -> None:
-        self.detected_modules: set[str] = set()
+        self.detected: set[str] = set()
 
-    def visit_Import(self, node: ast.Import) -> ast.Import:
+    def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
-            self.detected_modules.add(alias.name)
-        return node
+            self.detected.add(alias.name)
 
-    def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.ImportFrom:
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.module:
-            self.detected_modules.add(node.module)
+            self.detected.add(node.module)
             for alias in node.names:
-                self.detected_modules.add(f"{node.module}.{alias.name}")
-        return node
+                if alias.name != "*":
+                    self.detected.add(f"{node.module}.{alias.name}")
 
 
 def analyze_file(filepath: str) -> list[str]:
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read()
-        
-        tree = ast.parse(content)
-        transformer = LazyASTTransformer()
-        transformer.visit(tree)
-        return sorted(list(transformer.detected_modules))
+        content = Path(filepath).read_text(encoding="utf-8")
+        tree = ast.parse(content, filename=filepath)
+        collector = ImportCollector()
+        collector.visit(tree)
+        return sorted(collector.detected)
     except Exception:
         return []
+
+
+def analyze_stdlib_only(filepath: str) -> list[str]:
+    return [m for m in analyze_file(filepath) if m.split(".")[0] in _STDLIB_ROOTS]
+
+
+def analyze_third_party(filepath: str) -> list[str]:
+    return [m for m in analyze_file(filepath) if m.split(".")[0] not in _STDLIB_ROOTS]

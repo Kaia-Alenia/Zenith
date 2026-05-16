@@ -4,28 +4,37 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alenia-zenith"
-version = "1.1.3"
-description = "A deep infrastructure library for Python 3.14+ focused on extreme startup time optimization via lazy imports and speculative loading."
+version = "1.2.0"
+description = "Startup optimization library for Python 3.10+: lazy imports, speculative pre-loading, and persistent module cache."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "ALENIA STUDIOS TOOL LICENSE Version 1.0" }
 authors = [
-    { name = "Alenia Studios" }
+    { name = "Alenia Studios", email = "contact.aleniastudios@gmail.com" }
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Benchmark",
 ]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "mypy"]
+
+[project.scripts]
+zenith = "zenith.cli:main"
 
 [project.urls]
 "Homepage" = "https://github.com/Kaia-Alenia/Zenith"
+"Bug Tracker" = "https://github.com/Kaia-Alenia/Zenith/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["zenith"]
@@ -34,9 +43,8 @@ license-files = []
 [tool.hatch.build.targets.sdist]
 license-files = []
 
-
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.13"
 strict = true
 warn_unreachable = true
 warn_unused_ignores = true
