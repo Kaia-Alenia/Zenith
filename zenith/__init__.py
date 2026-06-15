@@ -9,7 +9,7 @@ from .hooks.loader import install_hook, STRICT_EXCLUSIONS
 from .speculation.predictor import ImportPredictor
 from .transformer.ast_rewriter import analyze_file
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 __all__ = ["ignite", "warm", "exclude", "status", "analyze", "invalidate_cache"]
 
 _engine = SpeculationEngine()

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] — 2026-06-15
+
+### Changed
+- Updated README badges layout to use unified purple palette and HTML GitGem badge for PyPI synchronization.
+
+---
+
 ## [1.2.1] — 2026-06-15
 
 ### Fixed
