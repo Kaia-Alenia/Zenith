@@ -1,11 +1,11 @@
 # Zenith
 
 [![PyPI Version](https://img.shields.io/pypi/v/alenia-zenith.svg?color=blueviolet)](https://pypi.org/project/alenia-zenith/)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-darkviolet.svg)](https://github.com/Kaia-Alenia/Zenith)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-darkviolet.svg)](https://github.com/Kaia-Alenia/alenia-zenith)
 [![License](https://img.shields.io/badge/License-Alenia%20Studios%20Tool%201.0-8a2be2.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blueviolet.svg)](#)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-indigo.svg)](#)
-<a href="https://gitgem.org/github/Kaia-Alenia/Zenith"><img src="https://gitgem.org/api/badge/github/Kaia-Alenia/Zenith.svg" alt="GitGem"></a>
+<a href="https://gitgem.org/github/Kaia-Alenia/alenia-zenith"><img src="https://gitgem.org/api/badge/github/Kaia-Alenia/alenia-zenith.svg" alt="GitGem"></a>
 
 **Startup optimization library for Python applications.**
 
@@ -124,7 +124,7 @@ zenith.exclude("my_c_extension", "greenlet")
 # Inspect current state
 info = zenith.status()
 # {
-#   "version": "1.2.3",
+#   "version": "1.2.4",
 #   "initialized": True,
 #   "workers": 4,
 #   "preloaded_count": 12,
