@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/license-Alenia%20Studios%201.0-orange.svg)](https://github.com/Kaia-Alenia/Zenith/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/Kaia-Alenia/Zenith)
 [![Status](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/Kaia-Alenia/Zenith)
+[![GitGem](https://gitgem.org/api/badge/github/Kaia-Alenia/Zenith.svg)](https://gitgem.org/github/Kaia-Alenia/Zenith)
 
 **Startup optimization library for Python applications.**
 
