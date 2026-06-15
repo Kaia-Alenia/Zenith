@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] — 2026-06-15
+
+### Fixed
+- Fixed memory leaks by clearing proxy loader attributes post-load.
+- Added reentrancy guards for thread-lock safety.
+- Implemented memory caching to avoid redundant disk reads.
+
+### Changed
+- Added GitGem verification badge to `README.md`.
+
 ---
 
 ## [1.2.0] — 2026-05-15
