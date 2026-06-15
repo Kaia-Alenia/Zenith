@@ -1,10 +1,11 @@
 # Zenith
 
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org)
-[![License](https://img.shields.io/badge/license-Alenia%20Studios%201.0-orange.svg)](https://github.com/Kaia-Alenia/Zenith/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/version-1.2.1-green.svg)](https://github.com/Kaia-Alenia/Zenith)
-[![Status](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/Kaia-Alenia/Zenith)
-[![GitGem](https://gitgem.org/api/badge/github/Kaia-Alenia/Zenith.svg)](https://gitgem.org/github/Kaia-Alenia/Zenith)
+[![PyPI Version](https://img.shields.io/pypi/v/alenia-zenith.svg?color=blueviolet)](https://pypi.org/project/alenia-zenith/)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-darkviolet.svg)](https://github.com/Kaia-Alenia/Zenith)
+[![License](https://img.shields.io/badge/License-Alenia%20Studios%20Tool%201.0-8a2be2.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blueviolet.svg)](#)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-indigo.svg)](#)
+<a href="https://gitgem.org/github/Kaia-Alenia/Zenith"><img src="https://gitgem.org/api/badge/github/Kaia-Alenia/Zenith.svg" alt="GitGem"></a>
 
 **Startup optimization library for Python applications.**
 
