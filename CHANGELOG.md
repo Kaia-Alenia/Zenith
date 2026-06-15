@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] — 2026-06-15
+
+### Changed
+- Bumped version to ensure clean PyPI publication and description synchronization.
+
+---
+
 ## [1.2.2] — 2026-06-15
 
 ### Changed
