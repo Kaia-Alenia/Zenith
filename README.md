@@ -329,7 +329,7 @@ zenith.warm("pandas", "matplotlib", "seaborn", "plotly")
 
 ## License
 
-Distributed under the ALENIA STUDIOS TOOL LICENSE Version 1.0. See [LICENSE](LICENSE) for more information.
+Distributed under the GNU General Public License v3 (GPL v3). See [LICENSE](LICENSE) for more information.
 
 Contact: contact.aleniastudios@gmail.com
 
