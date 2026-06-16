@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.6] — 2026-06-16
+
+### Changed
+- Bumped version to retry PyPI publication with Trusted Publisher settings.
+
+---
+
 ## [1.2.5] — 2026-06-16
 
 ### Changed
