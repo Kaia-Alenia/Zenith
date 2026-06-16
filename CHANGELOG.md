@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.7] — 2026-06-16
+
+### Changed
+- Bumped version to release on PyPI using configured Trusted Publisher.
+
+---
+
 ## [1.2.6] — 2026-06-16
 
 ### Changed
