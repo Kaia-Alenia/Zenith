@@ -5,16 +5,9 @@ import importlib
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Set, List, Union, Optional
 
-_bypass_lazy = threading.local()
+from zenith.core.constants import STRICT_EXCLUSIONS
 
-_BASE_EXCLUSIONS = {
-    "zenith", "sys", "builtins", "importlib", "_thread", "threading",
-    "concurrent", "queue", "abc", "functools", "atexit", "io",
-    "codecs", "encodings", "signal", "weakref", "operator", "types",
-    "typing", "warnings", "traceback", "linecache", "re", "enum",
-    "os", "os.path", "posixpath", "pathlib", "stat", "genericpath",
-    "posix", "_io", "site", "ast", "copy", "copyreg",
-}
+_bypass_lazy = threading.local()
 
 
 class SpeculationEngine:
@@ -25,7 +18,7 @@ class SpeculationEngine:
         self._lock = threading.Lock()
         self._workers = 4
         self._verbose = False
-        self._exclusions = set(_BASE_EXCLUSIONS)
+        self._exclusions = set(STRICT_EXCLUSIONS)
 
     def start(self, workers: int = 4, verbose: bool = False) -> None:
         self._workers = workers
@@ -87,8 +80,8 @@ class SpeculationEngine:
                 "workers": self._workers,
                 "preloaded_count": len(self._preloaded),
                 "failed_count": len(self._failed),
-                "preloaded": sorted(list(self._preloaded)),
-                "failed": sorted(list(self._failed)),
+                "preloaded": sorted(self._preloaded),
+                "failed": sorted(self._failed),
             }
 
     def shutdown(self, wait: bool = False) -> None:

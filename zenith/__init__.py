@@ -4,7 +4,8 @@ import threading
 from typing import Sequence, Union, Optional, List, Dict
 
 from .core.engine import SpeculationEngine
-from .hooks.loader import install_hook, STRICT_EXCLUSIONS
+from .core.constants import STRICT_EXCLUSIONS
+from .hooks.loader import install_hook
 from .speculation.predictor import ImportPredictor
 from .transformer.ast_rewriter import analyze_file
 

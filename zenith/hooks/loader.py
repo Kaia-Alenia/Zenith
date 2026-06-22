@@ -7,15 +7,7 @@ import threading
 from typing import Any
 
 from zenith.core.engine import _bypass_lazy
-
-STRICT_EXCLUSIONS = {
-    "zenith", "sys", "builtins", "importlib", "_thread", "threading",
-    "concurrent", "queue", "abc", "functools", "atexit", "io",
-    "codecs", "encodings", "signal", "weakref", "operator", "types",
-    "typing", "warnings", "traceback", "linecache", "re", "enum",
-    "os", "os.path", "posixpath", "pathlib", "stat",
-    "posix", "_io", "site", "ast",
-}
+from zenith.core.constants import STRICT_EXCLUSIONS
 
 _BOOTSTRAP_DUNDERS = {
     "__name__",
@@ -110,6 +102,8 @@ class ZenithLazyModule(types.ModuleType):
             _obj_setattr(self, "_zenith_loader", None)
             _obj_setattr(self, "_zenith_engine", None)
             _obj_setattr(self, "_zenith_predictor", None)
+            
+            self.__class__ = types.ModuleType
 
 
 class ZenithLazyLoader(importlib.abc.Loader):

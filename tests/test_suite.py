@@ -178,7 +178,7 @@ from fastapi import FastAPI
 
     section("7. warm() AND exclude()")
     from zenith.core.engine import SpeculationEngine as SE
-    from zenith.hooks.loader import STRICT_EXCLUSIONS
+    from zenith.core.constants import STRICT_EXCLUSIONS
 
     eng = SE()
     eng.start(workers=2)
@@ -277,6 +277,39 @@ print('ALL_OK' if all(r == 'ok' for r in results) and len(results) == 6 else f'F
     except RuntimeError:
         raised = True
     test("shutdown(wait=True) prevents new submissions", raised)
+
+    section("12. MAIN MODULE FULL API")
+    import tempfile, os
+    import importlib as _imp
+    _imp.reload(zenith)
+    zenith._initialized = False
+    zenith._engine = zenith.SpeculationEngine()
+    zenith._predictor = zenith.ImportPredictor()
+    
+    tmp_cache2 = Path(tempfile.mktemp(suffix=".json"))
+    zenith.ignite(cache_path=str(tmp_cache2), show_banner=False)
+    
+    # Save some dummy data into the cache
+    zenith._predictor.save_module("dummy_module1")
+    zenith._predictor.save_module("dummy_module2")
+    zenith._predictor.persist_cache()
+    
+    test("cache file exists before invalidate", tmp_cache2.exists())
+    
+    zenith.invalidate_cache()
+    test("invalidate_cache() removes the cache file", not tmp_cache2.exists())
+
+    _imp.reload(zenith)
+    zenith._initialized = False
+    zenith._engine = zenith.SpeculationEngine()
+    zenith._predictor = zenith.ImportPredictor()
+
+    tmp_script = Path(tempfile.mktemp(suffix=".py"))
+    tmp_script.write_text("import math\n", encoding="utf-8")
+    
+    zenith.ignite(file=str(tmp_script), show_banner=False)
+    test("ignite(file=...) preloads modules from file", "math" in zenith._engine._preloaded)
+    tmp_script.unlink()
 
     section("FINAL SUMMARY")
     total = len(results)

@@ -11,7 +11,7 @@ def run_isolated(use_zenith: bool, modules: list[str]) -> float:
     header = "import zenith; zenith.ignite(show_banner=False)\n" if use_zenith else ""
     code = f"""
 import sys, time
-sys.path.insert(0, '{ROOT}')
+sys.path.insert(0, {repr(str(ROOT))})
 {header}
 start = time.perf_counter()
 for m in {mod_list}:

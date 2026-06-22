@@ -1,5 +1,7 @@
 
 import json
+import os
+import tempfile
 import threading
 from pathlib import Path
 from typing import List, Optional
@@ -50,10 +52,22 @@ class ImportPredictor:
                 saved = set(self.load_predictions())
                 merged = list(saved.union(self.history))
                 self._cache_path.parent.mkdir(parents=True, exist_ok=True)
-                temp_path = self._cache_path.with_suffix(".tmp")
-                with temp_path.open("w", encoding="utf-8") as f:
-                    json.dump({"modules": sorted(merged)}, f, indent=4)
-                temp_path.replace(self._cache_path)
+                
+                fd, temp_path_str = tempfile.mkstemp(
+                    dir=self._cache_path.parent,
+                    prefix=self._cache_path.name + "-",
+                    suffix=".tmp"
+                )
+                temp_path = Path(temp_path_str)
+                try:
+                    with os.fdopen(fd, "w", encoding="utf-8") as f:
+                        json.dump({"modules": sorted(merged)}, f, indent=4)
+                    temp_path.replace(self._cache_path)
+                except Exception:
+                    if temp_path.exists():
+                        temp_path.unlink()
+                    raise
+                
                 self._loaded_predictions = sorted(merged)
         except Exception:
             pass

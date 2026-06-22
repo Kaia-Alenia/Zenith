@@ -6,11 +6,11 @@ import json
 
 
 def cmd_analyze(args: argparse.Namespace) -> None:
-    from zenith.transformer.ast_rewriter import analyze_file, analyze_stdlib_only, analyze_third_party
+    from zenith.transformer.ast_rewriter import analyze_file, _STDLIB_ROOTS
 
     all_mods = analyze_file(args.file)
-    stdlib = analyze_stdlib_only(args.file)
-    third = analyze_third_party(args.file)
+    stdlib = [m for m in all_mods if m.split(".")[0] in _STDLIB_ROOTS]
+    third = [m for m in all_mods if m.split(".")[0] not in _STDLIB_ROOTS]
 
     print(f"\n\033[95m[Zenith Analyzer] {args.file}\033[0m")
     print(f"  Total imports : {len(all_mods)}")

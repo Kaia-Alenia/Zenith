@@ -139,7 +139,7 @@ zenith.exclude("my_c_extension", "greenlet")
 # Inspect current state
 info = zenith.status()
 # {
-#   "version": "1.2.7",
+#   "version": "1.2.8",
 #   "initialized": True,
 #   "workers": 4,
 #   "preloaded_count": 12,
