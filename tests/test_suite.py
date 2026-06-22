@@ -141,6 +141,11 @@ from fastapi import FastAPI
     test("analyze_third_party filters correctly", "numpy" in third_mods and "os" not in third_mods)
     test("invalid file path returns []", analyze_file("/no/such/file.py") == [])
 
+    invalid_syntax_file = Path(tempfile.mktemp(suffix=".py"))
+    invalid_syntax_file.write_text("def class import bad syntax !!!\n", encoding="utf-8")
+    test("invalid syntax returns []", analyze_file(str(invalid_syntax_file)) == [])
+    invalid_syntax_file.unlink()
+
     test_file.unlink()
 
     section("6. ignite() PARAMETERS")
@@ -238,6 +243,32 @@ print('ALL_OK' if all(r == 'ok' for r in results) and len(results) == 6 else f'F
     test("6 concurrent threads on decimal (isolated subprocess)", output == "ALL_OK", output if output != "ALL_OK" else "")
     test("decimal.Decimal works correctly after lazy load", res.returncode == 0)
 
+
+    section("11. ENGINE SHUTDOWN")
+    from zenith.core.engine import SpeculationEngine
+    
+    eng11 = SpeculationEngine()
+    eng11.shutdown()
+    test("shutdown() when executor is None does not raise", True)
+    
+    eng11.start(workers=2)
+    eng11.shutdown(wait=False)
+    try:
+        eng11._executor.submit(lambda: None)
+        raised = False
+    except RuntimeError:
+        raised = True
+    test("shutdown(wait=False) prevents new submissions", raised)
+    
+    eng12 = SpeculationEngine()
+    eng12.start(workers=2)
+    eng12.shutdown(wait=True)
+    try:
+        eng12._executor.submit(lambda: None)
+        raised = False
+    except RuntimeError:
+        raised = True
+    test("shutdown(wait=True) prevents new submissions", raised)
 
     section("FINAL SUMMARY")
     total = len(results)
