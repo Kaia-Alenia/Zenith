@@ -15,6 +15,21 @@ Zenith reduces your application's import time by combining two mechanisms: **laz
 
 ---
 
+## What is Zenith for?
+
+Zenith is designed for Python applications that suffer from slow startup times (boot lag) caused by importing heavy libraries (such as `pandas`, `numpy`, `tensorflow`, `torch`, `click`, `rich`, or `PyQt`).
+
+Instead of waiting for every library to load sequentially on startup, Zenith creates a fast lazy proxy system and speculatively pre-loads your dependencies in background threads using a persistent cache from previous runs.
+
+### Core Use Cases:
+* **Command Line Interfaces (CLIs):** Deliver sub-second launch times for tools where a startup latency of 200ms+ ruins user experience.
+* **Serverless APIs (Cold Starts):** Drastically reduce cold starts in serverless environments (AWS Lambda, Google Cloud Run) by allowing the server to bind and listen to requests immediately while libraries load concurrently in the background.
+* **Data Science & ML Pipelines:** Bypass the initialization lag of heavy packages during frequent script executions and development loops.
+* **Desktop / GUI Applications:** Improve perceived performance by launching the main interface instantly while loading secondary assets and libraries asynchronously.
+
+---
+
+
 ## Measured Results (warm cache)
 
 Benchmarks run on isolated subprocesses, 5 runs averaged, loading `multiprocessing`, `urllib.request`, `sqlite3`, `json`, `xml.etree.ElementTree`:
