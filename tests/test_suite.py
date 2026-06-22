@@ -113,6 +113,14 @@ def run_all() -> None:
     pred2b.invalidate()
     test("invalidate() removes cache file", not tmp.exists())
 
+    tmp.write_text("{invalid json", encoding="utf-8")
+    pred_invalid = ImportPredictor(cache_path=str(tmp))
+    test("invalid json returns empty list", pred_invalid.load_predictions() == [])
+
+    tmp.write_text('["module"]', encoding="utf-8")
+    pred_not_dict = ImportPredictor(cache_path=str(tmp))
+    test("non-dict json returns empty list", pred_not_dict.load_predictions() == [])
+
     section("5. AST REWRITER")
     from zenith.transformer.ast_rewriter import analyze_file, analyze_stdlib_only, analyze_third_party
 
