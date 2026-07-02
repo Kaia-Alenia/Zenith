@@ -12,7 +12,7 @@ def cmd_analyze(args: argparse.Namespace) -> None:
     stdlib = [m for m in all_mods if m.split(".")[0] in _STDLIB_ROOTS]
     third = [m for m in all_mods if m.split(".")[0] not in _STDLIB_ROOTS]
 
-    print(f"\n\033[95m[Zenith Analyzer] {args.file}\033[0m")
+    print(f"\n\033[95m[Zenith Analyzer] {args.file!r}\033[0m")
     print(f"  Total imports : {len(all_mods)}")
     print(f"  Stdlib        : {len(stdlib)}")
     print(f"  Third-party   : {len(third)}")
@@ -59,6 +59,10 @@ print(time.perf_counter() - start)
             [sys.executable, "-c", code],
             capture_output=True, text=True,
         )
+        if result.returncode != 0:
+            print(f"Error running benchmark:", file=sys.stderr)
+            print(result.stderr, file=sys.stderr)
+            sys.exit(result.returncode)
         try:
             return float(result.stdout.strip())
         except ValueError:

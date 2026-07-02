@@ -3,10 +3,13 @@ import json
 import os
 import tempfile
 import threading
+import logging
 from pathlib import Path
 from typing import List, Optional
 
 _DEFAULT_CACHE = ".zenith_cache.json"
+
+logger = logging.getLogger(__name__)
 
 
 class ImportPredictor:
@@ -37,7 +40,8 @@ class ImportPredictor:
                 modules = data.get("modules", [])
                 self._loaded_predictions = [m for m in modules if isinstance(m, str) and m.strip()]
                 return self._loaded_predictions
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to load predictions: %s", e)
                 self._loaded_predictions = []
                 return []
 
@@ -69,8 +73,8 @@ class ImportPredictor:
                     raise
                 
                 self._loaded_predictions = sorted(merged)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to persist cache: %s", e)
 
     def invalidate(self) -> None:
         try:
@@ -79,8 +83,8 @@ class ImportPredictor:
                 self.history.clear()
                 if self._cache_path.exists():
                     self._cache_path.unlink()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to invalidate cache: %s", e)
 
 
 predictor = ImportPredictor()

@@ -3,7 +3,7 @@ import sys
 import threading
 import importlib
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, Set, List, Union, Optional
+from typing import Any, Dict, Set, List, Union
 
 from zenith.core.constants import STRICT_EXCLUSIONS
 

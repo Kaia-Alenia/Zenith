@@ -1,10 +1,12 @@
 
 import sys
 import types
-import importlib.abc
-import importlib.machinery
+from importlib.abc import Loader, MetaPathFinder
 import threading
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import importlib.machinery
 
 from zenith.core.engine import _bypass_lazy
 from zenith.core.constants import STRICT_EXCLUSIONS
@@ -30,8 +32,8 @@ _get_ident = threading.get_ident
 class ZenithLazyModule(types.ModuleType):
     def __init__(
         self,
-        spec: importlib.machinery.ModuleSpec,
-        real_loader: importlib.abc.Loader,
+        spec: "importlib.machinery.ModuleSpec",
+        real_loader: Loader,
         engine: Any,
         predictor: Any,
     ) -> None:
@@ -102,14 +104,14 @@ class ZenithLazyModule(types.ModuleType):
             _obj_setattr(self, "_zenith_loader", None)
             _obj_setattr(self, "_zenith_engine", None)
             _obj_setattr(self, "_zenith_predictor", None)
-            
+
             self.__class__ = types.ModuleType
 
 
-class ZenithLazyLoader(importlib.abc.Loader):
+class ZenithLazyLoader(Loader):
     def __init__(
         self,
-        real_loader: importlib.abc.Loader,
+        real_loader: Loader,
         engine: Any,
         predictor: Any,
     ) -> None:
@@ -118,15 +120,16 @@ class ZenithLazyLoader(importlib.abc.Loader):
         self.predictor = predictor
 
     def create_module(
-        self, spec: importlib.machinery.ModuleSpec
+        self, spec: "importlib.machinery.ModuleSpec"
     ) -> types.ModuleType or None:
-        return ZenithLazyModule(spec, self.real_loader, self.engine, self.predictor)
+        return ZenithLazyModule(
+            spec, self.real_loader, self.engine, self.predictor)
 
     def exec_module(self, module: types.ModuleType) -> None:
         pass
 
 
-class ZenithLazyFinder(importlib.abc.MetaPathFinder):
+class ZenithLazyFinder(MetaPathFinder):
     def __init__(
         self,
         engine: Any,
@@ -143,7 +146,7 @@ class ZenithLazyFinder(importlib.abc.MetaPathFinder):
         fullname: str,
         path: list[str or bytes] or None = None,
         target: types.ModuleType or None = None,
-    ) -> importlib.machinery.ModuleSpec or None:
+    ) -> "importlib.machinery.ModuleSpec" or None:
         if getattr(_bypass_lazy, "active", False):
             return None
 
@@ -171,13 +174,51 @@ class ZenithLazyFinder(importlib.abc.MetaPathFinder):
                     continue
 
             if spec is not None and spec.loader is not None:
+                if self._should_bypass_spec(fullname, spec):
+                    return spec
+
                 if not isinstance(spec.loader, ZenithLazyLoader) and hasattr(
                     spec.loader, "exec_module"
                 ):
-                    spec.loader = ZenithLazyLoader(spec.loader, self.engine, self.predictor)
+                    spec.loader = ZenithLazyLoader(
+                        spec.loader, self.engine, self.predictor
+                    )
             return spec
         finally:
             self._local.active_searches.discard(fullname)
+
+    def _should_bypass_spec(self, fullname: str, spec: "importlib.machinery.ModuleSpec") -> bool:
+        import os
+        import sysconfig
+
+        # Check if we are running as a direct script
+        if not sys.argv:
+            return False
+        arg0 = sys.argv[0]
+        is_main_script = arg0 not in ("", "-c", "-m") and os.path.isfile(arg0)
+        
+        if not is_main_script:
+            return False
+
+        # If it is a main script, check if the module is from the standard library
+        root_pkg = fullname.split(".")[0]
+        if hasattr(sys, "stdlib_module_names"):
+            if root_pkg in sys.stdlib_module_names:
+                return True
+        if root_pkg in sys.builtin_module_names:
+            return True
+
+        if not spec.origin:
+            return True
+        if spec.origin in ("built-in", "frozen"):
+            return True
+
+        stdlib_path = sysconfig.get_path("stdlib")
+        if stdlib_path and spec.origin.startswith(stdlib_path):
+            if "site-packages" not in spec.origin and "dist-packages" not in spec.origin:
+                return True
+
+        return False
 
 
 def install_hook(

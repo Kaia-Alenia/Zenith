@@ -11,3 +11,10 @@ env/
 venv/
 .vscode/
 TODO.md
+
+# Archivos de prueba y scratch
+sessions.txt
+*.orig
+tui_output.txt
+check_jules.py
+test_tui.py

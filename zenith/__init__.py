@@ -1,7 +1,8 @@
 
 import atexit
 import threading
-from typing import Sequence, Union, Optional, List, Dict
+from typing import Sequence, Union, Optional, List, Dict, Any
+from dataclasses import dataclass
 
 from .core.engine import SpeculationEngine
 from .core.constants import STRICT_EXCLUSIONS
@@ -9,13 +10,23 @@ from .hooks.loader import install_hook
 from .speculation.predictor import ImportPredictor
 from .transformer.ast_rewriter import analyze_file
 
-__version__ = "1.2.8"
+__version__ = "1.2.9"
 __all__ = ["ignite", "warm", "exclude", "status", "analyze", "invalidate_cache"]
 
 _engine = SpeculationEngine()
 _predictor = ImportPredictor()
 _initialized = False
 _init_lock = threading.Lock()
+
+@dataclass
+class IgniteConfig:
+    file: Optional[str] = None
+    workers: int = 4
+    verbose: bool = False
+    exclude: Optional[Sequence[str]] = None
+    cache_path: Optional[str] = None
+    show_banner: bool = True
+
 
 
 def _print_banner() -> None:
@@ -30,29 +41,24 @@ def _print_banner() -> None:
     print(banner)
 
 
-def ignite(
-    file: Optional[str] = None,
-    workers: int = 4,
-    verbose: bool = False,
-    exclude: Optional[Sequence[str]] = None,
-    cache_path: Optional[str] = None,
-    show_banner: bool = True,
-) -> None:
+def ignite(*args: Any, **kwargs: Any) -> None:
     global _initialized
     with _init_lock:
         if _initialized:
             return
         _initialized = True
 
-    if show_banner:
+    config = IgniteConfig(*args, **kwargs)
+
+    if config.show_banner:
         _print_banner()
 
-    if cache_path:
-        _predictor.set_cache_path(cache_path)
+    if config.cache_path:
+        _predictor.set_cache_path(config.cache_path)
 
-    extra_exclusions = set(exclude) if exclude else set()
+    extra_exclusions = set(config.exclude) if config.exclude else set()
 
-    _engine.start(workers=workers, verbose=verbose)
+    _engine.start(workers=config.workers, verbose=config.verbose)
     _engine.add_exclusions(extra_exclusions)
 
     predictions = _predictor.load_predictions()
@@ -61,8 +67,8 @@ def ignite(
 
     install_hook(_engine, _predictor, extra_exclusions=extra_exclusions)
 
-    if file:
-        discovered = analyze_file(file)
+    if config.file:
+        discovered = analyze_file(config.file)
         known = set(predictions)
         for mod in discovered:
             if mod not in known:
@@ -71,9 +77,9 @@ def ignite(
     atexit.register(_predictor.persist_cache)
     atexit.register(lambda: _engine.shutdown(wait=False))
 
-    if verbose:
+    if config.verbose:
         n = len(predictions)
-        print("\033[96m[Zenith] v{} | workers={} | cached={}\033[0m".format(__version__, workers, n))
+        print("\033[96m[Zenith] v{} | workers={} | cached={}\033[0m".format(__version__, config.workers, n))
 
 
 def warm(*modules: str) -> None:

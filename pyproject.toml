@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alenia-zenith"
-version = "1.2.8"
+version = "1.2.9"
 description = "Startup optimization library for Python 3.10+: lazy imports, speculative pre-loading, and persistent module cache."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,5 +1,4 @@
 import sys
-import time
 import subprocess
 from pathlib import Path
 
